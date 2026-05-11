@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # ─────────────────────────────────────────────
 # Page config
@@ -140,21 +139,50 @@ st.markdown("---")
 col3, col4 = st.columns(2)
 
 with col3:
-    st.subheader("Spring vs Fall — Enrollment Comparison")
+    st.subheader("Spring vs Fall — Key Metrics Comparison")
     term_comparison = (
         filtered.groupby("Term")[["Enrolled", "Retention Rate (%)", "Student Satisfaction (%)"]].mean()
     )
-    fig3, ax3 = plt.subplots(figsize=(6, 3.5))
-    x = range(len(term_comparison.columns))
-    width = 0.3
-    spring_vals = term_comparison.loc["Spring"].values if "Spring" in term_comparison.index else [0,0,0]
-    fall_vals   = term_comparison.loc["Fall"].values   if "Fall"   in term_comparison.index else [0,0,0]
-    ax3.bar([i - width/2 for i in x], spring_vals, width, label="Spring", color="#1f77b4", alpha=0.85)
-    ax3.bar([i + width/2 for i in x], fall_vals,   width, label="Fall",   color="#ff7f0e", alpha=0.85)
-    ax3.set_xticks(list(x))
-    ax3.set_xticklabels(["Enrolled", "Retention (%)", "Satisfaction (%)"])
-    ax3.legend()
-    ax3.grid(axis="y", linestyle="--", alpha=0.5)
+    spring = term_comparison.loc["Spring"] if "Spring" in term_comparison.index else None
+    fall   = term_comparison.loc["Fall"]   if "Fall"   in term_comparison.index else None
+
+    fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(6, 3.5))
+
+    # Left subplot — Enrolled (absolute values)
+    enrolled_vals = [
+        spring["Enrolled"] if spring is not None else 0,
+        fall["Enrolled"]   if fall   is not None else 0,
+    ]
+    ax3a.bar(["Spring", "Fall"], enrolled_vals,
+             color=["#1f77b4", "#ff7f0e"], alpha=0.85, width=0.5)
+    ax3a.set_title("Avg Enrolled", fontsize=10)
+    ax3a.set_ylabel("Students")
+    ax3a.set_ylim(0, max(enrolled_vals) * 1.2 if max(enrolled_vals) > 0 else 1)
+    for i, v in enumerate(enrolled_vals):
+        ax3a.text(i, v + 5, f"{v:.0f}", ha="center", fontsize=9)
+    ax3a.grid(axis="y", linestyle="--", alpha=0.5)
+
+    # Right subplot — Retention & Satisfaction (same % scale)
+    metrics = ["Retention (%)", "Satisfaction (%)"]
+    spring_pct = [
+        spring["Retention Rate (%)"]       if spring is not None else 0,
+        spring["Student Satisfaction (%)"] if spring is not None else 0,
+    ]
+    fall_pct = [
+        fall["Retention Rate (%)"]         if fall is not None else 0,
+        fall["Student Satisfaction (%)"]   if fall is not None else 0,
+    ]
+    w = 0.3
+    xi = range(len(metrics))
+    ax3b.bar([i - w/2 for i in xi], spring_pct, w, label="Spring", color="#1f77b4", alpha=0.85)
+    ax3b.bar([i + w/2 for i in xi], fall_pct,   w, label="Fall",   color="#ff7f0e", alpha=0.85)
+    ax3b.set_xticks(list(xi))
+    ax3b.set_xticklabels(metrics, fontsize=9)
+    ax3b.set_title("Rates (%)", fontsize=10)
+    ax3b.set_ylim(70, 95)
+    ax3b.legend(fontsize=8)
+    ax3b.grid(axis="y", linestyle="--", alpha=0.5)
+
     plt.tight_layout()
     st.pyplot(fig3)
     plt.close(fig3)
@@ -196,16 +224,27 @@ col5, col6 = st.columns(2)
 
 with col5:
     st.subheader("Retention vs Satisfaction (by Year)")
-    fig5, ax5 = plt.subplots(figsize=(6, 3.5))
-    scatter = ax5.scatter(
-        filtered["Retention Rate (%)"],
-        filtered["Student Satisfaction (%)"],
-        c=filtered["Year"],
-        cmap="viridis",
-        s=80,
-        alpha=0.85
+    # Group by year to avoid overlapping Spring/Fall duplicate points
+    scatter_data = (
+        filtered.groupby("Year")[["Retention Rate (%)", "Student Satisfaction (%)"]].mean().reset_index()
     )
-    plt.colorbar(scatter, ax=ax5, label="Year")
+    fig5, ax5 = plt.subplots(figsize=(6, 3.5))
+    sc = ax5.scatter(
+        scatter_data["Retention Rate (%)"],
+        scatter_data["Student Satisfaction (%)"],
+        c=scatter_data["Year"],
+        cmap="viridis",
+        s=100,
+        alpha=0.9,
+        zorder=3,
+    )
+    for _, row in scatter_data.iterrows():
+        ax5.annotate(
+            str(int(row["Year"])),
+            (row["Retention Rate (%)"], row["Student Satisfaction (%)"]),
+            textcoords="offset points", xytext=(6, 4), fontsize=7.5,
+        )
+    plt.colorbar(sc, ax=ax5, label="Year")
     ax5.set_xlabel("Retention Rate (%)")
     ax5.set_ylabel("Satisfaction (%)")
     ax5.grid(linestyle="--", alpha=0.4)
