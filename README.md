@@ -56,12 +56,23 @@ streamlit run app.py
 
 Deployed on **Streamlit Cloud** directly from this repository.
 
-Live URL: *(paste your Streamlit Cloud URL here after deployment)*
+Live URL: https://university-dashboard-nud6vkg7cqcjcu9izmhczt.streamlit.app/
 
 ## Repository structure
 
+```text
+├── app.py                         # Streamlit dashboard
+├── requirements.txt              # Python dependencies
+├── university_student_data.csv   # Dataset
+├── activity1_data_visualization.ipynb
+└── README.md                     # Project documentation
 ```
-├── app.py               # Streamlit dashboard
-├── requirements.txt     # Python dependencies
-└── README.md            # This file
-```
+
+## Technologies Used
+
+- Python
+- Pandas
+- Matplotlib
+- Streamlit
+- GitHub
+- Streamlit Cloud
