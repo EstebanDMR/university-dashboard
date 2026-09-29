@@ -1,0 +1,136 @@
+{
+  "source": "UCI Machine Learning Repository, dataset 697",
+  "dataset_sha256": "a1b1a6531bbb93a5c7fdf0093b47172776652a4ffb12342fb79655c85b74801b",
+  "package_versions": {
+    "pandas": "3.0.6",
+    "scikit_learn": "1.9.1"
+  },
+  "random_state": 42,
+  "train_rows": 3539,
+  "test_rows": 885,
+  "audit": {
+    "rows": 4424,
+    "columns": 37,
+    "missing_cells": 0,
+    "exact_duplicate_rows": 0,
+    "class_counts": {
+      "Dropout": 1421,
+      "Enrolled": 794,
+      "Graduate": 2209
+    },
+    "excluded_features": [
+      "Curricular units 2nd sem (credited)",
+      "Curricular units 2nd sem (enrolled)",
+      "Curricular units 2nd sem (evaluations)",
+      "Curricular units 2nd sem (approved)",
+      "Curricular units 2nd sem (grade)",
+      "Curricular units 2nd sem (without evaluations)",
+      "Unemployment rate",
+      "Inflation rate",
+      "GDP"
+    ],
+    "features_used": [
+      "Marital Status",
+      "Application mode",
+      "Application order",
+      "Course",
+      "Daytime/evening attendance",
+      "Previous qualification",
+      "Previous qualification (grade)",
+      "Nacionality",
+      "Mother's qualification",
+      "Father's qualification",
+      "Mother's occupation",
+      "Father's occupation",
+      "Admission grade",
+      "Displaced",
+      "Educational special needs",
+      "Debtor",
+      "Tuition fees up to date",
+      "Gender",
+      "Scholarship holder",
+      "Age at enrollment",
+      "International",
+      "Curricular units 1st sem (credited)",
+      "Curricular units 1st sem (enrolled)",
+      "Curricular units 1st sem (evaluations)",
+      "Curricular units 1st sem (approved)",
+      "Curricular units 1st sem (grade)",
+      "Curricular units 1st sem (without evaluations)"
+    ]
+  },
+  "cross_validation_train": {
+    "test_f1_macro": {
+      "mean": 0.6786580060277443,
+      "std": 0.026963319552154377
+    },
+    "test_recall_macro": {
+      "mean": 0.674920585460762,
+      "std": 0.0259180751704604
+    }
+  },
+  "test": {
+    "f1_macro": 0.6628097919742985,
+    "recall_macro": 0.6630481400025412,
+    "dropout_recall": 0.7007042253521126,
+    "classification_report": {
+      "Dropout": {
+        "precision": 0.7566539923954373,
+        "recall": 0.7007042253521126,
+        "f1-score": 0.7276051188299817,
+        "support": 284.0
+      },
+      "Enrolled": {
+        "precision": 0.42613636363636365,
+        "recall": 0.4716981132075472,
+        "f1-score": 0.44776119402985076,
+        "support": 159.0
+      },
+      "Graduate": {
+        "precision": 0.8094170403587444,
+        "recall": 0.8167420814479638,
+        "f1-score": 0.8130630630630631,
+        "support": 442.0
+      },
+      "accuracy": 0.7175141242937854,
+      "macro avg": {
+        "precision": 0.6640691321301818,
+        "recall": 0.6630481400025412,
+        "f1-score": 0.6628097919742985,
+        "support": 885.0
+      },
+      "weighted avg": {
+        "precision": 0.7236245734429956,
+        "recall": 0.7175141242937854,
+        "f1-score": 0.7200087655054632,
+        "support": 885.0
+      }
+    },
+    "labels": [
+      "Dropout",
+      "Enrolled",
+      "Graduate"
+    ],
+    "confusion_matrix": [
+      [
+        199,
+        47,
+        38
+      ],
+      [
+        37,
+        75,
+        47
+      ],
+      [
+        27,
+        54,
+        361
+      ]
+    ]
+  },
+  "baseline_test": {
+    "f1_macro": 0.22205476011052497,
+    "dropout_recall": 0.0
+  }
+}

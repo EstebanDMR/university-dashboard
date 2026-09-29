@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib 
 matplotlib.use("Agg") 
 import matplotlib.pyplot as plt
+import json
+from pathlib import Path
 
 # ─────────────────────────────────────────────
 # Page config
@@ -284,3 +286,80 @@ st.markdown("---")
 # ─────────────────────────────────────────────
 with st.expander("View filtered raw data"):
     st.dataframe(filtered.reset_index(drop=True), use_container_width=True)
+
+
+# This model uses a separate student-level dataset. The filters above apply only
+# to the aggregated university dashboard, not to these held-out model results.
+st.markdown("---")
+st.header("Predicción de resultados estudiantiles")
+st.caption(
+    "Estudio independiente con 4.424 registros individuales de una institución "
+    "portuguesa (UCI 697). Estos resultados no describen a la Universidad de la Costa "
+    "y no cambian con los filtros del panel superior."
+)
+
+results_dir = Path(__file__).resolve().parent / "results"
+metrics_path = results_dir / "model_metrics.json"
+importance_path = results_dir / "permutation_importance.csv"
+if metrics_path.exists() and importance_path.exists():
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    test = metrics["test"]
+    baseline = metrics["baseline_test"]
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Recall de Dropout", f"{test['dropout_recall']:.1%}")
+    c2.metric("F1 macro", f"{test['f1_macro']:.1%}")
+    c3.metric("Estudiantes de prueba", f"{metrics['test_rows']:,}")
+    st.caption(
+        f"Referencia que siempre elige la clase más frecuente: F1 macro "
+        f"{baseline['f1_macro']:.1%}; recall de Dropout {baseline['dropout_recall']:.1%}. "
+        "Métricas calculadas sobre un conjunto de prueba separado (20%)."
+    )
+
+    labels = test["labels"]
+    matrix = pd.DataFrame(test["confusion_matrix"], index=labels, columns=labels)
+    left, right = st.columns(2)
+    with left:
+        st.subheader("Matriz de confusión")
+        fig, ax = plt.subplots(figsize=(5, 4))
+        im = ax.imshow(matrix.values, cmap="Blues")
+        ax.set_xticks(range(len(labels)), labels=labels)
+        ax.set_yticks(range(len(labels)), labels=labels)
+        ax.set_xlabel("Predicción")
+        ax.set_ylabel("Resultado real")
+        for row in range(len(labels)):
+            for col in range(len(labels)):
+                ax.text(col, row, matrix.iat[row, col], ha="center", va="center")
+        fig.colorbar(im, ax=ax, shrink=0.8)
+        fig.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)
+    with right:
+        st.subheader("Recall y F1 por resultado")
+        class_scores = pd.DataFrame({
+            name: {
+                "Recall": test["classification_report"][name]["recall"],
+                "F1": test["classification_report"][name]["f1-score"],
+                "Soporte": test["classification_report"][name]["support"],
+            }
+            for name in labels
+        }).T
+        st.dataframe(class_scores.style.format({"Recall": "{:.1%}", "F1": "{:.1%}", "Soporte": "{:.0f}"}))
+
+    st.subheader("Variables asociadas con el rendimiento del modelo")
+    importance = pd.read_csv(importance_path).head(10)
+    st.bar_chart(importance.set_index("feature")["importance_mean"], horizontal=True)
+    st.caption(
+        "Importancia por permutación: caída media del F1 macro al mezclar una variable "
+        "en los datos de prueba. Indica asociación predictiva, no causalidad ni efecto "
+        "de una intervención. Se excluyeron todas las variables del segundo semestre."
+    )
+    with st.expander("Método y límites"):
+        st.markdown(
+            "Bosque aleatorio con codificación de categorías y evaluación estratificada. "
+            "La clase `Enrolled` aún no tiene un desenlace final; el conjunto no incluye "
+            "cohortes ni identificadores para una validación temporal o institucional. "
+            "No usar estas predicciones para decisiones individuales sin validación local, "
+            "evaluación de sesgos y supervisión humana."
+        )
+else:
+    st.info("Ejecute `python -m analysis.train_model` para generar los resultados del modelo.")
