@@ -44,14 +44,6 @@ selected_depts = st.sidebar.multiselect(
     "Department", departments, default=departments
 )
 
-# Team credits in sidebar
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Team members**")
-st.sidebar.markdown(
-    "- Esteban Mercado Rachath  \n"
-    "- Iván Cortés Cure"
-)
-
 # ─────────────────────────────────────────────
 # Filtered dataset
 # ─────────────────────────────────────────────
@@ -63,8 +55,7 @@ filtered = df[mask].copy()
 # ─────────────────────────────────────────────
 st.title("University Student Analytics Dashboard")
 st.markdown(
-    "Analytical overview of admissions, enrollment, retention, and satisfaction — "
-    "Universidad de la Costa · Data Mining · Prof. José Escorcia-Gutierrez"
+    "Analytical overview of admissions, enrollment, retention, and satisfaction"
 )
 st.markdown("---")
 
