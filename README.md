@@ -1,148 +1,129 @@
-# University Student Analytics Dashboard
+# Student Outcome Analytics
 
-## Purpose
+Proyecto de análisis de datos y aprendizaje automático para explorar los
+resultados de estudiantes y evaluar un clasificador de deserción, continuidad
+y graduación. Incluye análisis reproducible en Python y un dashboard en Streamlit.
 
-Interactive analytical dashboard for admissions, enrollment, retention, and
-satisfaction. A separate case study demonstrates student-level outcome
-classification with Python; its data come from a Portuguese institution.
+## Datos
 
-## Dataset
+Se utiliza un único conjunto: [Predict Students' Dropout and Academic Success,
+UCI 697](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).
+Cada fila representa un estudiante de una institución portuguesa.
 
-`university_student_data.csv` — contains the following columns:
-
-| Column | Description |
+| Característica | Valor |
 |---|---|
-| Year | Academic year (2015–2024) |
-| Term | Semester — Spring or Fall |
-| Applications | Total applications received |
-| Admitted | Students admitted |
-| Enrolled | Students who enrolled |
-| Retention Rate (%) | Percentage of students retained year-over-year |
-| Student Satisfaction (%) | Average satisfaction score |
-| Engineering Enrolled | Enrollment in Engineering department |
-| Business Enrolled | Enrollment in Business department |
-| Arts Enrolled | Enrollment in Arts department |
-| Science Enrolled | Enrollment in Science department |
+| Registros | 4.424 |
+| Variables de entrada disponibles | 36 |
+| Variable objetivo | `Target` |
+| `Dropout` (deserción) | 1.421 |
+| `Enrolled` (en curso) | 794 |
+| `Graduate` (graduación) | 2.209 |
+| Valores faltantes | 0 |
+| Filas exactamente duplicadas | 0 |
 
-This original file has only **20 aggregate rows** (2015–2024 × Spring/Fall).
-Each year's two terms have identical values apart from `Term`. It has no
-student-level identifier, predictors, or dropout outcome. It is retained for
-the original dashboard and is **not used to train the classifier**.
-
-### Student-level case study
-
-`data/student_dropout_uci.csv` is the UCI Machine Learning Repository's
-[Predict Students' Dropout and Academic Success (dataset 697)](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success).
-It contains **4,424 individual records**, **36 features**, and a `Target`
-column: `Dropout` (1,421), `Enrolled` (794), and `Graduate` (2,209).
-The downloaded file has no missing cells or exact duplicate rows. The case
-study is independent of the university data shown in the original dashboard.
-
-Source: Realinho, V., Vieira Martins, M., Machado, J., & Baptista, L. (2021),
-*Predict Students' Dropout and Academic Success*, UCI Machine Learning
-Repository, [DOI: 10.24432/C5MC89](https://doi.org/10.24432/C5MC89).
-The dataset is distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-The downloaded CSV has SHA-256
+El archivo `data/student_dropout_uci.csv` conserva los nombres y códigos
+originales. Consulte el diccionario de variables en UCI para interpretarlos.
+Su SHA-256 es
 `a1b1a6531bbb93a5c7fdf0093b47172776652a4ffb12342fb79655c85b74801b`.
 
-### Method
+**Atribución:** Realinho, V., Vieira Martins, M., Machado, J., & Baptista, L.
+(2021). *Predict Students' Dropout and Academic Success*. UCI Machine Learning
+Repository. [DOI: 10.24432/C5MC89](https://doi.org/10.24432/C5MC89).
+Licencia de los datos: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
-1. `student_dropout_analysis.ipynb` uses Pandas to inspect and prepare the
-   individual data and Seaborn to explore the outcome distribution and
-   first-semester academic performance.
-2. `analysis/train_model.py` predicts the three original outcome classes.
-   It drops all second-semester variables and the three macroeconomic
-   variables. Encoded categories are one-hot encoded; numerical variables
-   are median-imputed. Preprocessing is fitted inside the training pipeline.
-3. A stratified 80/20 split (random seed 42) reserves the test set. Five-fold
-   stratified cross-validation runs on training data only. A random forest
-   is compared with a most-frequent-class baseline. Recall, F1, and a
-   confusion matrix are calculated on the untouched test set.
-4. Permutation importance reports how much shuffling each original feature
-   reduces macro F1 on the test set. The reproducible outputs are in `results/`.
+## Proceso
 
-On the 885-student test set, the random forest reached **macro F1 0.663** and
-**Dropout recall 0.701** (199 of 284 Dropout cases identified). The
-most-frequent baseline reached macro F1 0.222 and Dropout recall 0.000.
-Five-fold training cross-validation gave macro F1 0.679 ± 0.027 (mean ±
-standard deviation). The full per-class report and confusion matrix are in
-`results/model_metrics.json`; ranked factors are in
-`results/permutation_importance.csv`.
-The `Enrolled` class remains harder to distinguish (test F1 0.448), and the
-model misses 85 of the 284 `Dropout` students in the test set.
+1. El notebook `student_dropout_analysis.ipynb` inspecciona tipos, valores
+   faltantes y duplicados con Pandas y explora distribuciones con Seaborn.
+2. El modelo usa 27 variables de ingreso y del primer semestre. Se excluyen
+   las seis variables del segundo semestre y las tres macroeconómicas.
+3. Una separación estratificada reserva 20% para prueba (semilla 42).
+   La imputación y codificación de categorías se ajustan dentro del pipeline.
+4. Un bosque aleatorio se evalúa con cinco pliegues de validación cruzada
+   sobre entrenamiento y después sobre el conjunto de prueba separado.
+   Se compara con una referencia que siempre predice la clase mayoritaria.
+5. La importancia por permutación mide la caída de F1 macro al mezclar cada
+   variable original en prueba. Las métricas y sus versiones de dependencias
+   se guardan en `results/`.
 
-Run the analysis locally:
+## Resultados
+
+| Métrica en prueba | Bosque aleatorio | Referencia |
+|---|---:|---:|
+| F1 macro | 0,663 | 0,222 |
+| Recall de deserción | 0,701 | 0,000 |
+
+El conjunto de prueba tiene 885 estudiantes. El modelo identifica 199 de
+284 casos de deserción y omite 85. La clase `Enrolled` tiene F1 de 0,448.
+La validación cruzada en entrenamiento obtiene F1 macro de 0,679 ± 0,027
+(media ± desviación estándar). El informe por clase y la matriz de confusión
+están en `results/model_metrics.json`.
+
+## Dashboard
+
+- **Exploración:** distribución de resultados y unidades aprobadas durante
+  el primer semestre. Filtros por resultado observado, edad y beca.
+- **Evaluación del modelo:** recall, F1, matriz de confusión e importancia
+  de variables sobre el conjunto de prueba completo.
+- **Datos y fuente:** tabla filtrada, descarga CSV, atribución y licencia.
+
+Los filtros afectan a la exploración y la tabla. Las métricas del modelo
+se leen de los resultados guardados y no se recalculan al filtrar.
+
+## Ejecución local
+
+Requiere Python 3.11 o superior.
 
 ```bash
 pip install -r requirements.txt
+streamlit run app.py
+```
+
+Para regenerar las métricas:
+
+```bash
 python -m analysis.train_model
-streamlit run app.py
 ```
 
-Open `student_dropout_analysis.ipynb` in a Python notebook environment from
-the repository root. The Streamlit section reads the checked-in result files
-and does not retrain on page load. Its results do not change with the
-aggregate-data filters.
-
-### Interpretation and limitations
-
-`Enrolled` is an unresolved status, not a final graduation/dropout outcome.
-The source lacks a usable cohort or year field for temporal validation, and
-comes from one Portuguese institution. A random split can overstate performance
-on future cohorts or a different university. Variables measured at the end of
-the first semester are unavailable at admission, so this is a **post-first-semester**
-assessment. Permutation importance is predictive association, not a causal
-effect. Do not use this demonstration for individual decisions without local
-validation, fairness review, and human oversight.
-Some students may have dropped out before first-semester measurements were
-complete, so these fields can partly reflect an event already underway.
-
-## Dashboard features
-
-- **KPI cards** — avg retention, avg satisfaction, total enrolled, admission rate
-- **Line chart** — retention rate trend over time
-- **Bar chart** — student satisfaction by year
-- **Grouped bar chart** — Spring vs Fall comparison
-- **Pie/donut chart** — enrollment breakdown by department
-- **Scatter plot** — retention vs satisfaction colored by year
-- **Horizontal bar chart** — applications → admitted → enrolled funnel
-- **Interactive filters** — year, term, department (sidebar)
-- **Raw data viewer** — expandable table of the filtered dataset
-
-## Run locally
+Para ejecutar el notebook, instale `requirements-notebook.txt` y ábralo con
+Jupyter desde la raíz del repositorio:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+pip install -r requirements-notebook.txt
+jupyter lab student_dropout_analysis.ipynb
 ```
 
-## Deployment
+La app está configurada para Streamlit Cloud con `app.py` como entrada.
+[Abrir dashboard](https://university-dashboard-nud6vkg7cqcjcu9izmhczt.streamlit.app/).
 
-Deployed on **Streamlit Cloud** directly from this repository.
+## Limitaciones
 
-Live URL: https://university-dashboard-nud6vkg7cqcjcu9izmhczt.streamlit.app/
+- `Enrolled` es un estado sin desenlace final. Su interpretación difiere
+  de las clases de graduación y deserción.
+- Las medidas del primer semestre no están disponibles al ingresar y
+  pueden reflejar una deserción ya iniciada. La evaluación es retrospectiva.
+- No hay cohortes ni años por estudiante que permitan validación temporal.
+  Una separación aleatoria puede sobreestimar el rendimiento futuro.
+- Los datos proceden de una sola institución portuguesa. Las métricas
+  no garantizan resultados en otra institución.
+- La importancia predictiva no demuestra causalidad. El modelo incluye
+  variables demográficas y no cuenta con una evaluación de equidad.
+  Su uso en decisiones individuales requiere validación local y supervisión humana.
 
-## Repository structure
+## Estructura
 
 ```text
-├── app.py                         # Streamlit dashboard
-├── requirements.txt              # Python dependencies
-├── university_student_data.csv   # Dataset
-├── activity1_data_visualization.ipynb
-├── student_dropout_analysis.ipynb # Student-level EDA and evaluation
-├── analysis/train_model.py        # Reproducible training script
-├── data/student_dropout_uci.csv   # UCI 697, CC BY 4.0
-├── results/                      # Test metrics and permutation importance
-└── README.md                     # Project documentation
+├── app.py
+├── student_dropout_analysis.ipynb
+├── analysis/
+│   ├── __init__.py
+│   └── train_model.py
+├── data/
+│   └── student_dropout_uci.csv
+├── results/
+│   ├── model_metrics.json
+│   └── permutation_importance.csv
+├── requirements.txt
+├── requirements-notebook.txt
+└── .devcontainer/devcontainer.json
 ```
-
-## Technologies Used
-
-- Python
-- Pandas
-- Matplotlib
-- Streamlit
-- GitHub
-- Streamlit Cloud
-- Seaborn
-- scikit-learn
